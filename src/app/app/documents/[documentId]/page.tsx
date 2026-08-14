@@ -21,10 +21,15 @@ export default function DocumentDetailPage({ params }: Props) {
   const { data: docs, isLoading, error } = useDocuments();
   const document = docs?.items.find((d) => d.id === documentId);
 
-  const { data: chunks, isLoading: chunksLoading } = useQuery({
+  const {
+    data: chunks,
+    isLoading: chunksLoading,
+    error: chunksError,
+  } = useQuery({
     queryKey: ["document-chunks", documentId],
     queryFn: () => getDocumentChunks(documentId),
     enabled: !!document && document.status === "ready",
+    retry: 1,
   });
 
   if (isLoading) {
@@ -108,7 +113,13 @@ export default function DocumentDetailPage({ params }: Props) {
             </div>
           )}
 
-          {chunks && chunks.length === 0 && (
+          {chunksError && (
+            <p className="text-sm text-destructive">
+              {chunksError instanceof Error ? chunksError.message : "Failed to load chunks."}
+            </p>
+          )}
+
+          {!chunksLoading && !chunksError && chunks && chunks.length === 0 && (
             <p className="text-sm text-muted-foreground">No chunks found.</p>
           )}
 
