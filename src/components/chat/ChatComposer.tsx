@@ -34,6 +34,15 @@ export function ChatComposer({
     el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
   }, [value]);
 
+  // Refocus after streaming ends so the user can type immediately
+  const wasStreamingRef = useRef(false);
+  useEffect(() => {
+    if (wasStreamingRef.current && !isStreaming) {
+      textareaRef.current?.focus();
+    }
+    wasStreamingRef.current = isStreaming;
+  }, [isStreaming]);
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === "Enter" && !e.shiftKey) {
@@ -57,6 +66,7 @@ export function ChatComposer({
           placeholder={placeholder}
           disabled={disabled || isStreaming}
           rows={1}
+          autoFocus
           className={cn(
             "flex-1 resize-none bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none min-h-[24px] max-h-[200px] py-0.5",
             (disabled || isStreaming) && "opacity-50 cursor-not-allowed"
