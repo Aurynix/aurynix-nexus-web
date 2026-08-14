@@ -2,12 +2,15 @@
 
 import { use } from "react";
 import Link from "next/link";
-import { ArrowLeft, FileText, AlertCircle } from "lucide-react";
+import { ArrowLeft, FileText, AlertCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { useDocuments } from "@/hooks/useDocuments";
+import { getDocumentChunks } from "@/lib/api/documents";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatBytes, formatRelativeTime } from "@/lib/utils";
+import { useState } from "react";
 
 interface Props {
   params: Promise<{ documentId: string }>;
@@ -16,12 +19,17 @@ interface Props {
 export default function DocumentDetailPage({ params }: Props) {
   const { documentId } = use(params);
   const { data: docs, isLoading, error } = useDocuments();
-
   const document = docs?.items.find((d) => d.id === documentId);
+
+  const { data: chunks, isLoading: chunksLoading } = useQuery({
+    queryKey: ["document-chunks", documentId],
+    queryFn: () => getDocumentChunks(documentId),
+    enabled: !!document && document.status === "ready",
+  });
 
   if (isLoading) {
     return (
-      <div className="max-w-2xl mx-auto p-6 space-y-4">
+      <div className="max-w-3xl mx-auto p-6 space-y-4">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-32 w-full rounded-lg" />
@@ -42,7 +50,8 @@ export default function DocumentDetailPage({ params }: Props) {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 space-y-6">
+    <div className="max-w-3xl mx-auto p-6 space-y-6">
+      {/* Back + header */}
       <div>
         <Button variant="ghost" size="sm" className="gap-1.5 -ml-2 mb-4" asChild>
           <Link href="/app/documents">
@@ -67,6 +76,7 @@ export default function DocumentDetailPage({ params }: Props) {
         </div>
       </div>
 
+      {/* Metadata */}
       <div className="rounded-lg border border-border bg-card p-4 space-y-3">
         <h2 className="text-sm font-medium text-foreground">Details</h2>
         <dl className="space-y-2 text-sm">
@@ -82,6 +92,76 @@ export default function DocumentDetailPage({ params }: Props) {
           )}
         </dl>
       </div>
+
+      {/* Chunks */}
+      {document.status === "ready" && (
+        <div className="space-y-3">
+          <h2 className="text-sm font-medium text-foreground">
+            Chunks{chunks ? ` (${chunks.length})` : ""}
+          </h2>
+
+          {chunksLoading && (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-20 w-full rounded-lg" />
+              ))}
+            </div>
+          )}
+
+          {chunks && chunks.length === 0 && (
+            <p className="text-sm text-muted-foreground">No chunks found.</p>
+          )}
+
+          {chunks && chunks.length > 0 && (
+            <div className="space-y-2">
+              {chunks.map((chunk) => (
+                <ChunkCard key={chunk.index} chunk={chunk} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ChunkCard({ chunk }: { chunk: { index: number; page: number | null; content: string } }) {
+  const [expanded, setExpanded] = useState(false);
+  const isLong = chunk.content.length > 300;
+  const preview = isLong && !expanded ? chunk.content.slice(0, 300) + "…" : chunk.content;
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-4 space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-muted-foreground">
+            Chunk {chunk.index}
+          </span>
+          {chunk.page !== null && (
+            <Badge variant="secondary" className="text-xs py-0">
+              Page {chunk.page + 1}
+            </Badge>
+          )}
+        </div>
+        <span className="text-xs text-muted-foreground">
+          {chunk.content.length} chars
+        </span>
+      </div>
+      <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed font-mono">
+        {preview}
+      </p>
+      {isLong && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center gap-1 text-xs text-primary hover:underline"
+        >
+          {expanded ? (
+            <><ChevronUp className="h-3 w-3" /> Show less</>
+          ) : (
+            <><ChevronDown className="h-3 w-3" /> Show more</>
+          )}
+        </button>
+      )}
     </div>
   );
 }
@@ -112,11 +192,7 @@ function DetailRow({
   return (
     <div className="flex items-start justify-between gap-4">
       <dt className="text-muted-foreground flex-shrink-0">{label}</dt>
-      <dd
-        className={
-          isError ? "text-destructive text-right" : "text-foreground text-right"
-        }
-      >
+      <dd className={isError ? "text-destructive text-right" : "text-foreground text-right"}>
         {value}
       </dd>
     </div>

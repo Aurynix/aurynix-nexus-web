@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { FileText, Upload, Trash2, CloudUpload, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatBytes, formatRelativeTime } from "@/lib/utils";
@@ -143,12 +144,13 @@ function DocumentItem({ doc }: DocumentItemProps) {
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <p
-              className="text-sm font-medium text-foreground truncate"
+            <Link
+              href={`/app/documents/${doc.id}`}
+              className="text-sm font-medium text-foreground truncate hover:underline block"
               title={doc.filename}
             >
               {doc.filename}
-            </p>
+            </Link>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className="text-xs text-muted-foreground">
                 {formatBytes(doc.file_size)}

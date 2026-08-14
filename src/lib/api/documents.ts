@@ -22,3 +22,13 @@ export async function deleteDocument(id: string): Promise<void> {
 export async function getJobStatus(jobId: string): Promise<JobStatusResponse> {
   return apiClient.get<JobStatusResponse>(`/documents/jobs/${jobId}`);
 }
+
+export interface DocumentChunk {
+  index: number;
+  page: number | null;
+  content: string;
+}
+
+export async function getDocumentChunks(id: string): Promise<DocumentChunk[]> {
+  return apiClient.get<DocumentChunk[]>(`/documents/${id}/chunks`);
+}
