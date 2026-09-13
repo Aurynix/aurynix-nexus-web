@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -14,6 +14,7 @@ import {
   Plus,
   LayoutDashboard,
   MessagesSquare,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
@@ -35,6 +36,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Conversations", href: "/app/conversations", icon: MessagesSquare },
   { label: "Documents", href: "/app/documents", icon: FileText },
   { label: "Memory", href: "/app/memory", icon: Brain },
+  { label: "Contact groups", href: "/app/contact-groups", icon: Users },
 ];
 
 interface SidebarProps {
