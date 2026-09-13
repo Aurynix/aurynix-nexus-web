@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="aurynix" x1="0" y1="0" x2="0.5" y2="1">
+      <stop offset="0" stop-color="#8f80ff"/>
+      <stop offset="1" stop-color="#5f4fd6"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#aurynix)"/>
+  <path d="M8 24V8h4.2l7.6 10.4V8H24v16h-4.2L12.2 13.6V24z" fill="#fff"/>
+</svg>
