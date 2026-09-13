@@ -90,7 +90,7 @@ export async function streamChat(
               callbacks.onToolEnd?.(event.tool);
               break;
             case "interrupt":
-              callbacks.onInterrupt?.(event.question);
+              callbacks.onInterrupt?.(event);
               break;
             case "error":
               callbacks.onError?.(event.detail);

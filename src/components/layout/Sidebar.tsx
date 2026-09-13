@@ -65,27 +65,27 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
       <aside
         className={cn(
           "flex h-full flex-col bg-sidebar border-r border-sidebar-border transition-all duration-200",
-          collapsed ? "w-14" : "w-56"
+          collapsed ? "w-14" : "w-62"
         )}
       >
         {/* Logo + collapse button */}
         <div
           className={cn(
             "flex items-center border-b border-sidebar-border",
-            collapsed ? "flex-col gap-2 px-2 py-3" : "h-14 px-4 justify-between"
+            collapsed ? "flex-col gap-2 px-2 py-3" : "h-15 px-4.5 justify-between"
           )}
         >
           {!collapsed && (
-            <Link href="/app" className="flex items-center gap-2 min-w-0">
-              <div className="h-6 w-6 rounded bg-primary flex-shrink-0" />
-              <span className="font-semibold text-sm text-sidebar-foreground truncate">
+            <Link href="/app" className="flex items-center gap-2.5 min-w-0">
+              <div className="aury-mark h-6.5 w-6.5 rounded-lg flex-shrink-0" />
+              <span className="font-bold text-sm tracking-tight text-sidebar-foreground truncate">
                 Aurynix Nexus
               </span>
             </Link>
           )}
           {collapsed && (
             <Link href="/app">
-              <div className="h-6 w-6 rounded bg-primary" />
+              <div className="aury-mark h-6.5 w-6.5 rounded-lg" />
             </Link>
           )}
           <button
@@ -102,7 +102,7 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
         </div>
 
         {/* New Chat button */}
-        <div className={cn("px-2 py-3", collapsed && "flex justify-center")}>
+        <div className={cn("px-3.5 pt-4 pb-2.5", collapsed && "flex justify-center px-2 py-3")}>
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -110,7 +110,7 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
                   size="icon"
                   variant="ghost"
                   onClick={handleNewChat}
-                  className="h-8 w-8 text-sidebar-foreground hover:bg-sidebar-accent"
+                  className="aury-btn-soft h-8 w-8"
                   aria-label="New chat"
                 >
                   <Plus className="h-4 w-4" />
@@ -123,7 +123,7 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
               variant="ghost"
               size="sm"
               onClick={handleNewChat}
-              className="w-full justify-start gap-2 text-sidebar-foreground hover:bg-sidebar-accent text-sm h-8"
+              className="aury-btn-soft w-full justify-start gap-2 text-sm h-10 font-semibold"
             >
               <Plus className="h-4 w-4 flex-shrink-0" />
               New chat
@@ -134,7 +134,7 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
         <Separator className="bg-sidebar-border" />
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
+        <nav className="flex-1 overflow-y-auto px-2.5 py-1.5 space-y-0.5">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const active = isActive(item);
@@ -146,7 +146,7 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
                     <Link
                       href={item.href}
                       className={cn(
-                        "flex h-8 w-full items-center justify-center rounded text-sm transition-colors",
+                        "flex h-9 w-full items-center justify-center rounded-[9px] text-sm transition-colors",
                         active
                           ? "bg-sidebar-accent text-sidebar-accent-foreground"
                           : "text-sidebar-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -166,14 +166,17 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex h-8 w-full items-center gap-2.5 rounded px-2 text-sm transition-colors",
+                  "flex h-9.5 w-full items-center gap-2.5 rounded-[9px] px-2.5 text-sm transition-colors",
                   active
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold ring-1 ring-inset ring-brand-border"
                     : "text-sidebar-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 )}
               >
                 <Icon className="h-4 w-4 flex-shrink-0" />
                 <span className="truncate">{item.label}</span>
+                {active && (
+                  <span className="ml-auto h-1.5 w-1.5 flex-shrink-0 rounded-full bg-brand-text" />
+                )}
               </Link>
             );
           })}
@@ -182,7 +185,7 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
         <Separator className="bg-sidebar-border" />
 
         {/* Settings + User */}
-        <div className={cn("px-2 py-3 space-y-0.5")}>
+        <div className={cn("px-2.5 py-2.5 space-y-0.5")}>
           {collapsed ? (
             <>
               <Tooltip>
@@ -190,7 +193,7 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
                   <Link
                     href="/app/settings"
                     className={cn(
-                      "flex h-8 w-full items-center justify-center rounded text-sm transition-colors",
+                      "flex h-9 w-full items-center justify-center rounded-[9px] text-sm transition-colors",
                       pathname.startsWith("/app/settings")
                         ? "bg-sidebar-accent text-sidebar-accent-foreground"
                         : "text-sidebar-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
@@ -207,7 +210,7 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
                 <TooltipTrigger asChild>
                   <button
                     onClick={signOut}
-                    className="flex h-8 w-full items-center justify-center rounded text-sm text-sidebar-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                    className="flex h-9 w-full items-center justify-center rounded-[9px] text-sm text-sidebar-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
                     aria-label="Sign out"
                   >
                     <LogOut className="h-4 w-4" />
@@ -221,9 +224,9 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
               <Link
                 href="/app/settings"
                 className={cn(
-                  "flex h-8 w-full items-center gap-2.5 rounded px-2 text-sm transition-colors",
+                  "flex h-9.5 w-full items-center gap-2.5 rounded-[9px] px-2.5 text-sm transition-colors",
                   pathname.startsWith("/app/settings")
-                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground font-bold ring-1 ring-inset ring-brand-border"
                     : "text-sidebar-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 )}
               >
@@ -232,14 +235,14 @@ export function Sidebar({ collapsed = false, onCollapsedChange }: SidebarProps) 
               </Link>
 
               {/* User row */}
-              <div className="flex items-center gap-2.5 rounded px-2 py-1.5 mt-1">
-                <Avatar className="h-6 w-6 flex-shrink-0">
-                  <AvatarFallback className="text-[10px] bg-primary text-primary-foreground">
+              <div className="flex items-center gap-2.5 rounded-[9px] px-2.5 py-2 mt-1">
+                <Avatar className="h-7.5 w-7.5 flex-shrink-0">
+                  <AvatarFallback className="aury-avatar text-[11px] font-extrabold text-white">
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-sidebar-foreground truncate">
+                  <p className="text-xs text-sidebar-muted-foreground truncate">
                     {user?.email ?? ""}
                   </p>
                 </div>
