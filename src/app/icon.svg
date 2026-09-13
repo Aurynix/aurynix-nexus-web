@@ -6,5 +6,7 @@
     </linearGradient>
   </defs>
   <rect width="32" height="32" rx="8" fill="url(#aurynix)"/>
-  <path d="M8 24V8h4.2l7.6 10.4V8H24v16h-4.2L12.2 13.6V24z" fill="#fff"/>
+  <path fill="#fff" fill-rule="evenodd" d="M16 7 L26 25 H6 Z
+    M16 13.6 L18.4 19.4 H13.6 Z
+    M12.4 22.9 H19.6 L21.2 25 H10.8 Z"/>
 </svg>
