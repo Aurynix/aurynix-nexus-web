@@ -233,6 +233,8 @@ interface ChatWindowProps {
   conversationId?: string;
   initialMessages?: MessageResponse[];
   conversationStatus?: "active" | "interrupted";
+  /** A message typed on another page, sent as soon as this one mounts. */
+  initialPrompt?: string;
 }
 
 const SUGGESTED_PROMPTS = [
@@ -259,6 +261,7 @@ export function ChatWindow({
   conversationId: initialConversationId,
   initialMessages = [],
   conversationStatus,
+  initialPrompt,
 }: ChatWindowProps) {
   const queryClient = useQueryClient();
   const { timezone, source: timezoneSource } = useTimezone();
@@ -444,6 +447,16 @@ export function ChatWindow({
     () => submitMessage(input),
     [submitMessage, input]
   );
+
+  // Send a prompt handed over from another page, exactly once. The query string
+  // is dropped straight away so a refresh can't silently resend it.
+  const autoSentRef = useRef(false);
+  useEffect(() => {
+    if (!initialPrompt?.trim() || autoSentRef.current) return;
+    autoSentRef.current = true;
+    window.history.replaceState(null, "", "/app/chat");
+    void submitMessage(initialPrompt);
+  }, [initialPrompt, submitMessage]);
 
   const sendDecision = useCallback(
     (choice: Exclude<ApprovalChoice, "replied">, action: PendingAction) => {

@@ -35,9 +35,13 @@ export default function DashboardPage() {
 
   const recentConversations = conversations?.slice(0, 5) ?? [];
 
+  // Carry the typed message into the new conversation instead of dropping it —
+  // the chat window sends it on arrival.
   const handlePromptKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && prompt.trim()) {
-      router.push("/app/chat");
+    const trimmed = prompt.trim();
+    if (e.key === "Enter" && trimmed) {
+      e.preventDefault();
+      router.push(`/app/chat?q=${encodeURIComponent(trimmed)}`);
     }
   };
 
