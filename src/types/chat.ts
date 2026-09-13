@@ -43,6 +43,16 @@ export interface SSEToken {
 export interface SSEInterrupt {
   type: "interrupt";
   question: string;
+  /**
+   * Structured description of the write the agent wants to perform (the email
+   * it would send, the event it would book). Optional: older backends send only
+   * `question`, and the extra keys are read defensively by
+   * `parsePendingAction`, which falls back to parsing `question` itself.
+   */
+  action?: unknown;
+  payload?: unknown;
+  data?: unknown;
+  tool?: string;
 }
 
 export interface SSEError {

@@ -18,7 +18,64 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle2, X, Unplug, Link2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { TimezoneCard } from "@/components/settings/TimezoneCard";
+import { describeOAuthReason } from "@/lib/oauth-errors";
+import { cn } from "@/lib/utils";
+import {
+  CheckCircle2,
+  X,
+  Unplug,
+  Link2,
+  CalendarPlus,
+  CalendarClock,
+  Mail,
+  MailSearch,
+  Lock,
+} from "lucide-react";
+
+/**
+ * What the agent can actually do once Google is connected. Each row names the
+ * Google scope it depends on, so a partially-granted connection shows exactly
+ * which capability is missing rather than failing mysteriously mid-chat.
+ */
+const AGENT_CAPABILITIES = [
+  {
+    icon: CalendarClock,
+    title: "Check your calendar",
+    example: "\u201cAm I free on Thursday afternoon?\u201d",
+    scope: "calendar.readonly",
+  },
+  {
+    icon: CalendarPlus,
+    title: "Create and update events",
+    example: "\u201cBook a call with Sara on Monday at 10.\u201d",
+    scope: "calendar.events",
+    needsApproval: true,
+  },
+  {
+    icon: MailSearch,
+    title: "Read and search your inbox",
+    example: "\u201cWhat did the supplier say about the invoice?\u201d",
+    scope: "gmail.readonly",
+  },
+  {
+    icon: Mail,
+    title: "Send email on your behalf",
+    example: "\u201cReply and confirm the meeting.\u201d",
+    scope: "gmail.send",
+    needsApproval: true,
+  },
+] as const;
 
 function formatScope(scope: string): string {
   if (scope.includes("gmail")) return "Gmail";
@@ -43,6 +100,7 @@ export default function IntegrationsPage() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectError, setConnectError] = useState<string | null>(null);
   const [disconnectNotice, setDisconnectNotice] = useState(false);
+  const [confirmDisconnect, setConfirmDisconnect] = useState(false);
 
   // Auto-dismiss success alert after 3 seconds
   useEffect(() => {
@@ -61,6 +119,7 @@ export default function IntegrationsPage() {
     mutationFn: disconnectGoogle,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["google-status"] });
+      setConfirmDisconnect(false);
       setDisconnectNotice(true);
       setTimeout(() => setDisconnectNotice(false), 3000);
     },
@@ -83,6 +142,9 @@ export default function IntegrationsPage() {
   const handleDisconnect = () => {
     disconnectMutation.mutate();
   };
+
+  const connectedEmail =
+    googleStatus?.email ?? googleStatus?.google_email ?? null;
 
   return (
     <div className="max-w-xl space-y-6">
@@ -108,8 +170,8 @@ export default function IntegrationsPage() {
         <Alert variant="destructive">
           <AlertDescription className="flex items-center justify-between">
             <span>
-              Failed to connect Google account
-              {oauthReason ? `: ${oauthReason}` : "."}
+              Failed to connect Google account.{" "}
+              {describeOAuthReason(oauthReason)}
             </span>
             <button
               onClick={() => setErrorDismissed(true)}
@@ -195,9 +257,16 @@ export default function IntegrationsPage() {
             </div>
           ) : googleStatus?.connected ? (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Grants access to Gmail and Calendar.
-              </p>
+              <div className="space-y-1">
+                {connectedEmail && (
+                  <p className="text-sm font-semibold text-foreground break-words">
+                    {connectedEmail}
+                  </p>
+                )}
+                <p className="text-sm text-muted-foreground">
+                  Grants access to Gmail and Calendar.
+                </p>
+              </div>
 
               {googleStatus.scopes.length > 0 && (
                 <div>
@@ -221,7 +290,7 @@ export default function IntegrationsPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleDisconnect}
+                onClick={() => setConfirmDisconnect(true)}
                 disabled={disconnectMutation.isPending}
                 className="gap-2 text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
               >
@@ -247,6 +316,109 @@ export default function IntegrationsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* What the agent can do with this connection */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Agent capabilities</CardTitle>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {googleStatus?.connected
+              ? "Ask for these in plain language from any chat."
+              : "Connect Google above to unlock these in chat."}
+          </p>
+        </CardHeader>
+
+        <CardContent className="space-y-1">
+          {AGENT_CAPABILITIES.map((cap) => {
+            const Icon = cap.icon;
+            const granted =
+              googleStatus?.connected &&
+              googleStatus.scopes.some((s) => s.includes(cap.scope));
+
+            return (
+              <div
+                key={cap.title}
+                className={cn(
+                  "flex items-start gap-3 rounded-[12px] px-3 py-3 transition-opacity",
+                  !granted && "opacity-55"
+                )}
+              >
+                <div className="mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-[10px] border border-brand-border bg-brand-soft text-brand-text">
+                  {granted ? (
+                    <Icon className="h-4 w-4" />
+                  ) : (
+                    <Lock className="h-3.5 w-3.5" />
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold text-foreground">
+                      {cap.title}
+                    </p>
+                    {"needsApproval" in cap && cap.needsApproval && (
+                      <Badge
+                        variant="outline"
+                        className="border-amber-500/30 bg-amber-500/10 text-[11px] text-amber-700 dark:text-amber-400"
+                      >
+                        Asks first
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="mt-0.5 text-[13px] italic text-muted-foreground">
+                    {cap.example}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
+
+      <TimezoneCard />
+
+      {/* Disconnecting revokes calendar and mailbox access, so confirm first. */}
+      <AlertDialog
+        open={confirmDisconnect}
+        onOpenChange={(open) => {
+          if (!disconnectMutation.isPending) setConfirmDisconnect(open);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Disconnect Google?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Aurynix will lose calendar/email access until you reconnect
+              {connectedEmail ? ` ${connectedEmail}` : ""}. Events already
+              created and emails already sent are not affected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          {disconnectMutation.isError && (
+            <p className="text-sm text-destructive">
+              {disconnectMutation.error instanceof Error
+                ? disconnectMutation.error.message
+                : "Couldn't disconnect. Please try again."}
+            </p>
+          )}
+
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={disconnectMutation.isPending}>
+              Keep connected
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                handleDisconnect();
+              }}
+              disabled={disconnectMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {disconnectMutation.isPending ? "Disconnecting…" : "Disconnect"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

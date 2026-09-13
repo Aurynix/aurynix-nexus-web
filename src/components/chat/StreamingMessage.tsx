@@ -5,6 +5,33 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/lib/utils";
 
+/**
+ * Tool names come off the wire as raw identifiers. Showing "send_email" to a
+ * user is worse than showing what it's actually doing, so map the known ones
+ * and fall back to de-snake-casing anything new the backend adds.
+ */
+const TOOL_LABELS: Record<string, string> = {
+  knowledge_base_search: "Searching your documents",
+  document_search: "Searching your documents",
+  memory_search: "Recalling what I know about you",
+  memory_write: "Updating memory",
+  web_search: "Searching the web",
+  send_email: "Preparing an email",
+  read_email: "Reading your inbox",
+  search_email: "Searching your inbox",
+  create_calendar_event: "Adding a calendar event",
+  update_calendar_event: "Updating a calendar event",
+  delete_calendar_event: "Removing a calendar event",
+  list_calendar_events: "Checking your calendar",
+};
+
+function formatToolName(tool: string): string {
+  const known = TOOL_LABELS[tool];
+  if (known) return known;
+  const words = tool.replace(/[_-]+/g, " ").trim();
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
 interface StreamingMessageProps {
   content: string;
   activeTool: string | null;
@@ -33,7 +60,7 @@ export function StreamingMessage({
               <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground animate-bounce" />
             </div>
             <span className="text-xs text-muted-foreground">
-              Using <span className="font-mono">{activeTool}</span>…
+              {formatToolName(activeTool)}…
             </span>
           </div>
         )}
