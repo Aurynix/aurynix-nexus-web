@@ -3,8 +3,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, "Cascadia Code", monospace;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "Cascadia Code", monospace;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -33,6 +33,25 @@
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
 
+  /* Aurynix brand */
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-text: var(--brand-text);
+  --color-brand-border: var(--brand-border);
+
+  --animate-aury-fade: auryFade 0.4s ease both;
+  --animate-aury-pulse: auryPulse 3.4s ease-in-out infinite;
+
+  @keyframes auryFade {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes auryPulse {
+    0%, 100% { opacity: 0.45; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.06); }
+  }
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -40,68 +59,90 @@
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.6875rem;
 
   /* Light mode */
-  --background: #fafafa;
-  --foreground: #0a0a0a;
+  --background: #f7f7fa;
+  --foreground: #16161c;
   --card: #ffffff;
-  --card-foreground: #0a0a0a;
+  --card-foreground: #16161c;
   --popover: #ffffff;
-  --popover-foreground: #0a0a0a;
-  --primary: #0a0a0a;
-  --primary-foreground: #fafafa;
-  --secondary: #f5f5f5;
-  --secondary-foreground: #0a0a0a;
-  --muted: #f5f5f5;
-  --muted-foreground: #737373;
-  --accent: #f5f5f5;
-  --accent-foreground: #0a0a0a;
+  --popover-foreground: #16161c;
+  --primary: #6a58ec;
+  --primary-foreground: #ffffff;
+  --secondary: #eeeef3;
+  --secondary-foreground: #16161c;
+  --muted: #f0f0f5;
+  --muted-foreground: #6b6b7a;
+  --accent: #eceaff;
+  --accent-foreground: #4a3bc4;
   --destructive: #dc2626;
   --destructive-foreground: #fafafa;
-  --border: #e5e5e5;
-  --input: #e5e5e5;
-  --ring: #a3a3a3;
+  --border: #e3e3ea;
+  --input: #e3e3ea;
+  --ring: #8b7bff;
+
+  /* Aurynix brand */
+  --brand: #6a58ec;
+  --brand-soft: rgba(125, 108, 245, 0.1);
+  --brand-strong: #5f4fd6;
+  --brand-text: #5a48d8;
+  --brand-border: rgba(106, 88, 236, 0.28);
+  --brand-gradient: linear-gradient(180deg, #8b7bff, #6a58ec);
+  --brand-mark: linear-gradient(150deg, #8f80ff, #5f4fd6);
+  --surface-gradient: linear-gradient(180deg, #ffffff, #fbfbfe);
+  --brand-shadow: 0 12px 26px -14px rgba(106, 88, 236, 0.7);
 
   /* Sidebar */
-  --sidebar: #f5f5f5;
-  --sidebar-foreground: #0a0a0a;
-  --sidebar-border: #e5e5e5;
-  --sidebar-muted: #f0f0f0;
-  --sidebar-muted-foreground: #737373;
-  --sidebar-accent: #e8e8e8;
-  --sidebar-accent-foreground: #0a0a0a;
+  --sidebar: #f1f1f6;
+  --sidebar-foreground: #16161c;
+  --sidebar-border: #e3e3ea;
+  --sidebar-muted: #eaeaf1;
+  --sidebar-muted-foreground: #6b6b7a;
+  --sidebar-accent: rgba(125, 108, 245, 0.12);
+  --sidebar-accent-foreground: #4a3bc4;
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #fafafa;
-  --card: #141414;
-  --card-foreground: #fafafa;
-  --popover: #1a1a1a;
-  --popover-foreground: #fafafa;
-  --primary: #fafafa;
-  --primary-foreground: #0a0a0a;
-  --secondary: #262626;
-  --secondary-foreground: #fafafa;
-  --muted: #1a1a1a;
-  --muted-foreground: #a3a3a3;
-  --accent: #1f1f1f;
-  --accent-foreground: #fafafa;
-  --destructive: #ef4444;
-  --destructive-foreground: #fafafa;
-  --border: #262626;
-  --input: #262626;
-  --ring: #525252;
+  --background: #08080a;
+  --foreground: #f2f2f5;
+  --card: #111116;
+  --card-foreground: #f2f2f5;
+  --popover: #15151b;
+  --popover-foreground: #f2f2f5;
+  --primary: #7d6cf5;
+  --primary-foreground: #ffffff;
+  --secondary: #1a1a21;
+  --secondary-foreground: #f2f2f5;
+  --muted: #16161c;
+  --muted-foreground: #8b8b96;
+  --accent: rgba(125, 108, 245, 0.14);
+  --accent-foreground: #cfc7ff;
+  --destructive: #f26d6d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: rgba(125, 108, 245, 0.55);
 
-  /* Sidebar — slightly distinct from content */
-  --sidebar: #0f0f0f;
-  --sidebar-foreground: #e5e5e5;
-  --sidebar-border: #1f1f1f;
-  --sidebar-muted: #141414;
-  --sidebar-muted-foreground: #737373;
-  --sidebar-accent: #1f1f1f;
-  --sidebar-accent-foreground: #e5e5e5;
+  /* Aurynix brand */
+  --brand: #7d6cf5;
+  --brand-soft: rgba(125, 108, 245, 0.13);
+  --brand-strong: #5f4fd6;
+  --brand-text: #9a8bff;
+  --brand-border: rgba(148, 133, 255, 0.28);
+  --brand-gradient: linear-gradient(180deg, #8b7bff, #6a58ec);
+  --brand-mark: linear-gradient(150deg, #8f80ff, #5f4fd6);
+  --surface-gradient: linear-gradient(180deg, #131318, #101014);
+  --brand-shadow: 0 12px 26px -12px rgba(125, 108, 245, 0.9);
+
+  /* Sidebar */
+  --sidebar: #0c0c10;
+  --sidebar-foreground: #f2f2f5;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-muted: #101015;
+  --sidebar-muted-foreground: #8b8b96;
+  --sidebar-accent: rgba(125, 108, 245, 0.15);
+  --sidebar-accent-foreground: #cfc7ff;
 }
 
 * {
@@ -251,4 +292,150 @@ body {
 .hljs {
   background: transparent !important;
   padding: 0 !important;
+}
+
+/* ── Aurynix design language ───────────────────────────────── */
+
+body {
+  letter-spacing: -0.005em;
+}
+
+/* Brand mark: the rounded gradient square with a white chip inside */
+.aury-mark {
+  background: var(--brand-mark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px -12px rgba(125, 108, 245, 0.65);
+}
+
+.aury-mark::after {
+  content: "";
+  display: block;
+  width: 30%;
+  height: 30%;
+  border-radius: 30%;
+  background: #fff;
+}
+
+/* Gradient avatar / chip without the inner white square */
+.aury-avatar {
+  background: var(--brand-mark);
+  color: #fff;
+}
+
+/* Primary action: vertical purple gradient with a soft cast shadow */
+.aury-btn-primary {
+  background: var(--brand-gradient);
+  color: #fff;
+  border: none;
+  box-shadow: var(--brand-shadow);
+  transition: filter 0.16s ease, transform 0.16s ease;
+}
+
+.aury-btn-primary:hover {
+  filter: brightness(1.1);
+}
+
+.aury-btn-primary:active {
+  transform: scale(0.985);
+}
+
+/* Secondary action: tinted brand chip */
+.aury-btn-soft {
+  background: var(--brand-soft);
+  border: 1px solid var(--brand-border);
+  color: var(--brand-text);
+  transition: background 0.16s ease, border-color 0.16s ease;
+}
+
+.aury-btn-soft:hover {
+  background: color-mix(in srgb, var(--brand) 22%, transparent);
+  border-color: color-mix(in srgb, var(--brand) 50%, transparent);
+}
+
+/* Raised surface: subtle top-lit gradient panel */
+.aury-surface {
+  background: var(--surface-gradient);
+  border: 1px solid var(--border);
+  box-shadow: 0 14px 30px -22px rgba(0, 0, 0, 0.95);
+}
+
+.aury-surface-hover {
+  transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.aury-surface-hover:hover {
+  border-color: color-mix(in srgb, var(--brand) 35%, transparent);
+  transform: translateY(-2px);
+}
+
+/* Gradient hairline border, used on the auth card */
+.aury-gradient-border {
+  padding: 1px;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--brand) 45%, transparent),
+    var(--border) 38%,
+    var(--border)
+  );
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.55),
+    0 0 60px -30px color-mix(in srgb, var(--brand) 50%, transparent);
+}
+
+/* Ambient glow behind hero content */
+.aury-glow {
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--brand) 20%, transparent),
+    transparent 65%
+  );
+  pointer-events: none;
+}
+
+/* Heading that fades from foreground into brand */
+.aury-heading-gradient {
+  background: linear-gradient(
+    100deg,
+    var(--foreground) 30%,
+    color-mix(in srgb, var(--brand) 70%, var(--foreground))
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Small uppercase section label */
+.aury-eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--muted-foreground);
+}
+
+/* Dashed placeholder panel with a brand wash from the top */
+.aury-empty-panel {
+  border: 1px dashed var(--input);
+  background: radial-gradient(
+      ellipse at 50% 0%,
+      color-mix(in srgb, var(--brand) 9%, transparent),
+      transparent 70%
+    ),
+    var(--card);
+}
+
+/* Tailwind v4's preflight resets buttons to `cursor: default`. Restore the
+   pointer everywhere rather than sprinkling `cursor-pointer` per component —
+   this also covers Radix triggers, which render as button/div with a role. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+label[for],
+summary {
+  cursor: pointer;
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
 }

@@ -23,7 +23,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex h-full items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-6 w-6 rounded bg-primary animate-pulse" />
+          <div className="aury-mark animate-aury-pulse h-9 w-9 rounded-xl" />
           <p className="text-sm text-muted-foreground">Loading…</p>
         </div>
       </div>

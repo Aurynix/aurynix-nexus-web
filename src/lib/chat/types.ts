@@ -1,4 +1,4 @@
-import type { SSEEvent } from "@/types/chat";
+import type { SSEEvent, SSEInterrupt } from "@/types/chat";
 
 export type { SSEEvent };
 
@@ -8,7 +8,7 @@ export interface StreamState {
   isStreaming: boolean;
   isThinking: boolean;
   activeTool: string | null;
-  interrupt: string | null;
+  interrupt: SSEInterrupt | null;
   error: string | null;
   isDone: boolean;
 }
@@ -29,7 +29,7 @@ export interface StreamCallbacks {
   onToken?: (content: string) => void;
   onToolStart?: (tool: string, input: string) => void;
   onToolEnd?: (tool: string) => void;
-  onInterrupt?: (question: string) => void;
+  onInterrupt?: (event: SSEInterrupt) => void;
   onError?: (detail: string) => void;
   onDone?: () => void;
 }

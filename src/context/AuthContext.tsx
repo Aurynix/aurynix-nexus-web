@@ -11,7 +11,14 @@ import React, {
 import { useRouter } from "next/navigation";
 import type { UserResponse } from "@/types/auth";
 import type { LoginRequest, RegisterRequest } from "@/types/auth";
-import { login, logout, register, refreshSession, getMe } from "@/lib/api/auth";
+import {
+  login,
+  logout,
+  register,
+  refreshSession,
+  getMe,
+  exchangeGoogleCode,
+} from "@/lib/api/auth";
 import { tokenStore } from "@/lib/api/client";
 
 interface AuthContextValue {
@@ -20,6 +27,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   signIn: (data: LoginRequest) => Promise<void>;
   signUp: (data: RegisterRequest) => Promise<void>;
+  completeGoogleSignIn: (code: string) => Promise<void>;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -86,6 +94,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [router]
   );
 
+  const completeGoogleSignIn = useCallback(
+    async (code: string) => {
+      await exchangeGoogleCode(code);
+      const me = await getMe();
+      setUser(me);
+      // replace(): the callback URL holds a spent code, so it must not stay in
+      // history for the back button to land on.
+      router.replace("/app");
+    },
+    [router]
+  );
+
   const signOut = useCallback(async () => {
     try {
       await logout();
@@ -101,6 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: !!user,
     signIn,
     signUp,
+    completeGoogleSignIn,
     signOut,
     refreshUser,
   };
