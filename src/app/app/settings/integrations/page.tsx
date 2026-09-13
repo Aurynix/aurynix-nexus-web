@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { TimezoneCard } from "@/components/settings/TimezoneCard";
 import { describeOAuthReason } from "@/lib/oauth-errors";
+import { normalizeCapabilities } from "@/lib/google-capabilities";
 import { cn } from "@/lib/utils";
 import {
   CheckCircle2,
@@ -76,17 +77,6 @@ const AGENT_CAPABILITIES = [
     needsApproval: true,
   },
 ] as const;
-
-function formatScope(scope: string): string {
-  if (scope.includes("gmail")) return "Gmail";
-  if (scope.includes("calendar")) return "Google Calendar";
-  if (scope.includes("drive")) return "Google Drive";
-  if (scope.includes("contacts")) return "Google Contacts";
-  if (scope.includes("profile")) return "Profile";
-  if (scope.includes("email")) return "Email";
-  const parts = scope.split(/[./]/);
-  return parts[parts.length - 1] ?? scope;
-}
 
 export default function IntegrationsPage() {
   const searchParams = useSearchParams();
@@ -145,6 +135,8 @@ export default function IntegrationsPage() {
 
   const connectedEmail =
     googleStatus?.email ?? googleStatus?.google_email ?? null;
+
+  const capabilities = normalizeCapabilities(googleStatus);
 
   return (
     <div className="max-w-xl space-y-6">
@@ -268,19 +260,19 @@ export default function IntegrationsPage() {
                 </p>
               </div>
 
-              {googleStatus.scopes.length > 0 && (
+              {capabilities.length > 0 && (
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-2">
-                    Active scopes
+                    Connected products
                   </p>
                   <div className="flex flex-wrap gap-1.5">
-                    {googleStatus.scopes.map((scope) => (
+                    {capabilities.map((capability) => (
                       <Badge
-                        key={scope}
+                        key={capability.id}
                         variant="secondary"
                         className="text-xs"
                       >
-                        {formatScope(scope)}
+                        {capability.label}
                       </Badge>
                     ))}
                   </div>
