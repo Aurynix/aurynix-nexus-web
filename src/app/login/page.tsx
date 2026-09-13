@@ -8,7 +8,10 @@ import { z } from "zod";
 import { useAuth } from "@/hooks/useAuth";
 import { ApiRequestError } from "@/lib/api/client";
 import { Button } from "@/components/ui/button";
+import { GoogleButton } from "@/components/auth/GoogleButton";
+import { AuthDivider } from "@/components/auth/AuthDivider";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -55,19 +58,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-sm space-y-6">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background p-5">
+      <div className="aury-glow absolute -top-55 left-1/2 h-140 w-190 -translate-x-1/2" />
+      <div className="relative w-full max-w-[420px] animate-aury-fade">
         {/* Logo */}
-        <div className="flex flex-col items-center gap-2">
-          <div className="h-10 w-10 rounded-lg bg-primary" />
-          <h1 className="text-xl font-semibold text-foreground">
+        <div className="mb-7 flex flex-col items-center gap-4">
+          <div className="aury-mark h-13 w-13 rounded-[15px]" />
+          <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-foreground">
             Aurynix Nexus
           </h1>
         </div>
 
-        <Card>
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-lg">Sign in</CardTitle>
+        <div className="aury-gradient-border rounded-[20px]">
+        <Card className="rounded-[19px] border-0 bg-[image:var(--surface-gradient)] p-2 shadow-none">
+          <CardHeader className="space-y-1.5 pb-5">
+            <CardTitle className="text-[21px] tracking-[-0.02em]">Sign in</CardTitle>
             <CardDescription>
               Enter your credentials to access your account
             </CardDescription>
@@ -81,7 +86,7 @@ export default function LoginPage() {
                 </Alert>
               )}
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -98,11 +103,10 @@ export default function LoginPage() {
                 )}
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input
+                <PasswordInput
                   id="password"
-                  type="password"
                   placeholder="••••••••"
                   autoComplete="current-password"
                   disabled={isSubmitting}
@@ -115,9 +119,12 @@ export default function LoginPage() {
                 )}
               </div>
 
+              <AuthDivider />
+              <GoogleButton mode="signin" disabled={isSubmitting} />
+
               <Button
                 type="submit"
-                className="w-full"
+                className="aury-btn-primary h-11.5 w-full text-[15px] font-bold"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Signing in…" : "Sign in"}
@@ -125,18 +132,23 @@ export default function LoginPage() {
             </form>
           </CardContent>
 
-          <CardFooter className="justify-center">
-            <p className="text-sm text-muted-foreground">
+          <CardFooter className="justify-center pt-1">
+            <p className="text-[13.5px] text-muted-foreground">
               Don&apos;t have an account?{" "}
               <Link
                 href="/register"
-                className="text-foreground underline-offset-4 hover:underline font-medium"
+                className="ml-0.5 font-bold text-brand-text hover:brightness-115"
               >
                 Sign up
               </Link>
             </p>
           </CardFooter>
         </Card>
+        </div>
+
+        <p className="mt-5.5 text-center text-xs text-muted-foreground/70">
+          Protected by Aurynix identity · SOC 2 Type II
+        </p>
       </div>
     </div>
   );
