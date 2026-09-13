@@ -11,6 +11,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/app/conversations": "Conversations",
   "/app/documents": "Documents",
   "/app/memory": "Memory",
+  "/app/contact-groups": "Contact groups",
   "/app/settings": "Settings",
   "/app/settings/profile": "Profile",
   "/app/settings/security": "Security",
