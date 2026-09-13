@@ -13,6 +13,11 @@ import type { GoogleStatusResponse } from "@/types/integration";
 export interface GoogleCapability {
   id: string;
   label: string;
+  /**
+   * What the user actually granted, e.g. "read and send". Shown verbatim: a
+   * read-only Gmail grant must never read as though mail can be sent.
+   */
+  access: string | null;
 }
 
 const PRODUCT_LABELS: Record<string, string> = {
@@ -40,7 +45,7 @@ function labelFor(id: string): string {
 function readEntry(entry: unknown): GoogleCapability | null {
   if (typeof entry === "string") {
     const id = entry.trim();
-    return id ? { id, label: labelFor(id) } : null;
+    return id ? { id, label: labelFor(id), access: null } : null;
   }
   if (typeof entry === "object" && entry !== null && !Array.isArray(entry)) {
     const record = entry as Record<string, unknown>;
@@ -55,7 +60,11 @@ function readEntry(entry: unknown): GoogleCapability | null {
     const label = pick(["label", "title", "display_name", "displayName"]);
     if (!id && !label) return null;
     const resolvedId = id ?? label!;
-    return { id: resolvedId, label: label ?? labelFor(resolvedId) };
+    return {
+      id: resolvedId,
+      label: label ?? labelFor(resolvedId),
+      access: pick(["access", "description", "granted"]),
+    };
   }
   return null;
 }
@@ -84,7 +93,7 @@ export function normalizeCapabilities(
 
   const push = (capability: GoogleCapability | null) => {
     if (!capability) return;
-    const dedupeKey = capability.label.toLowerCase();
+    const dedupeKey = (capability.id || capability.label).toLowerCase();
     if (seen.has(dedupeKey)) return;
     seen.add(dedupeKey);
     result.push(capability);
@@ -98,7 +107,7 @@ export function normalizeCapabilities(
   for (const scope of status?.scopes ?? []) {
     if (isIdentityScope(scope)) continue;
     const product = productFromScope(scope);
-    if (product) push({ id: product, label: labelFor(product) });
+    if (product) push({ id: product, label: labelFor(product), access: null });
   }
   return result;
 }

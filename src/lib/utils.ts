@@ -44,3 +44,14 @@ export function getConversationTitle(
   if (firstUserMessage) return truncate(firstUserMessage.content, 50);
   return fallback;
 }
+
+/**
+ * Memory keys are normalised on write — trimmed, lowercased, spaces to
+ * underscores — so `Favorite Color` comes back as `favorite_color`. Prettify
+ * for display only; keep sending and comparing the raw key.
+ */
+export function formatMemoryKey(key: string): string {
+  const words = key.replace(/[_-]+/g, " ").trim();
+  if (!words) return key;
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}

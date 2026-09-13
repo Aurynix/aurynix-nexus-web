@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Brain, Plus, Search, Edit2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatRelativeTime } from "@/lib/utils";
+import { formatRelativeTime, formatMemoryKey } from "@/lib/utils";
 import {
   useMemory,
   useCreateMemoryFact,
@@ -60,21 +60,12 @@ function MemoryDialog({
   const createMutation = useCreateMemoryFact();
   const updateMutation = useUpdateMemoryFact();
 
-  const [key, setKey] = useState("");
-  const [value, setValue] = useState("");
+  // Seeded from props; the parent remounts this via `key` when the fact being
+  // edited changes, so there's no effect to resync — and an edit re-reads the
+  // stored key, which the backend may have normalised on the way in.
+  const [key, setKey] = useState(editingFact?.key ?? "");
+  const [value, setValue] = useState(editingFact?.value ?? "");
   const [formError, setFormError] = useState<string | null>(null);
-
-  // Sync form when editing fact changes
-  useEffect(() => {
-    if (editingFact) {
-      setKey(editingFact.key);
-      setValue(editingFact.value);
-    } else {
-      setKey("");
-      setValue("");
-    }
-    setFormError(null);
-  }, [editingFact, open]);
 
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
@@ -153,6 +144,10 @@ function MemoryDialog({
               disabled={isLoading}
               autoFocus
             />
+            <p className="text-xs text-muted-foreground">
+              Saved lowercase with underscores — &ldquo;Preferred language&rdquo;
+              becomes preferred_language.
+            </p>
           </div>
 
           <div className="space-y-1.5">
@@ -219,8 +214,11 @@ function MemoryFactRow({ fact, onEdit }: MemoryFactRowProps) {
     <div className="flex items-start gap-4 rounded-lg border border-border bg-card p-4">
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-medium text-foreground">
-            {fact.key}
+          <span
+            className="text-sm font-medium text-foreground"
+            title={fact.key}
+          >
+            {formatMemoryKey(fact.key)}
           </span>
           {fact.source === "manual" ? (
             <Badge variant="outline" className="text-xs py-0">
@@ -272,8 +270,9 @@ function MemoryFactRow({ fact, onEdit }: MemoryFactRowProps) {
             <AlertDialogHeader>
               <AlertDialogTitle>Delete memory?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will permanently delete the memory fact &ldquo;{fact.key}
-                &rdquo;. This action cannot be undone.
+                This will permanently delete the memory fact &ldquo;
+                {formatMemoryKey(fact.key)}&rdquo;. This action cannot be
+                undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -312,7 +311,9 @@ export default function MemoryPage() {
     const q = searchQuery.toLowerCase();
     return facts.filter(
       (f) =>
-        f.key.toLowerCase().includes(q) || f.value.toLowerCase().includes(q)
+        f.key.toLowerCase().includes(q) ||
+        formatMemoryKey(f.key).toLowerCase().includes(q) ||
+        f.value.toLowerCase().includes(q)
     );
   }, [facts, searchQuery]);
 
@@ -438,6 +439,7 @@ export default function MemoryPage() {
 
       {/* Add / Edit dialog */}
       <MemoryDialog
+        key={editingFact?.id ?? "new"}
         open={dialogOpen}
         onOpenChange={(open) => {
           if (!open) handleDialogClose();

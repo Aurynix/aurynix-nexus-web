@@ -265,15 +265,23 @@ export default function IntegrationsPage() {
                   <p className="text-xs font-medium text-muted-foreground mb-2">
                     Connected products
                   </p>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="space-y-1.5">
                     {capabilities.map((capability) => (
-                      <Badge
+                      <div
                         key={capability.id}
-                        variant="secondary"
-                        className="text-xs"
+                        className="flex flex-wrap items-center gap-2"
                       >
-                        {capability.label}
-                      </Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          {capability.label}
+                        </Badge>
+                        {/* What was actually granted — a read-only Gmail
+                            connection must not look like send access. */}
+                        {capability.access && (
+                          <span className="text-xs text-muted-foreground">
+                            {capability.access}
+                          </span>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>

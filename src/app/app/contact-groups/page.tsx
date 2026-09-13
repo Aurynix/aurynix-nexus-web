@@ -41,6 +41,14 @@ import {
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+/** The backend rejects anything larger. */
+const MAX_MEMBERS = 100;
+
+/** Group names are matched case- and space-insensitively by the backend. */
+function normalizeGroupName(name: string): string {
+  return name.trim().toLowerCase().replace(/\s+/g, "");
+}
+
 interface MemberDraft {
   email: string;
   displayName: string;
@@ -56,6 +64,7 @@ interface GroupDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editingGroup: ContactGroupResponse | null;
+  existingGroups: ContactGroupResponse[];
   onClose: () => void;
 }
 
@@ -63,6 +72,7 @@ function GroupDialog({
   open,
   onOpenChange,
   editingGroup,
+  existingGroups,
   onClose,
 }: GroupDialogProps) {
   const createMutation = useCreateContactGroup();
@@ -112,7 +122,7 @@ function GroupDialog({
         1,
         ...parts.map((email) => ({ email, displayName: "" }))
       );
-      return next;
+      return next.slice(0, MAX_MEMBERS);
     });
   };
 
@@ -131,6 +141,18 @@ function GroupDialog({
       return;
     }
 
+    // The backend answers 409 for this; catching it here names the clash before
+    // the user loses the form, and matches the same way the backend does.
+    const clash = existingGroups.find(
+      (group) =>
+        group.id !== editingGroup?.id &&
+        normalizeGroupName(group.name) === normalizeGroupName(trimmedName)
+    );
+    if (clash) {
+      setFormError(`You already have a group called ${clash.name}.`);
+      return;
+    }
+
     const filled = members.filter((member) => member.email.trim());
 
     const invalid = filled.find(
@@ -145,6 +167,7 @@ function GroupDialog({
 
     const seen = new Set<string>();
     const payload: ContactGroupMemberInput[] = [];
+
     for (const member of filled) {
       const email = member.email.trim();
       const key = email.toLowerCase();
@@ -156,6 +179,11 @@ function GroupDialog({
           ? { display_name: member.displayName.trim() }
           : {}),
       });
+    }
+
+    if (payload.length > MAX_MEMBERS) {
+      setFormError(`A group can hold at most ${MAX_MEMBERS} addresses.`);
+      return;
     }
 
     setFormError(null);
@@ -204,7 +232,12 @@ function GroupDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Members</Label>
+            <div className="flex items-center justify-between">
+              <Label>Members</Label>
+              <span className="text-xs text-muted-foreground">
+                {members.filter((m) => m.email.trim()).length} / {MAX_MEMBERS}
+              </span>
+            </div>
             <div className="max-h-64 space-y-2 overflow-y-auto pr-1">
               {members.map((member, index) => (
                 <div key={index} className="flex items-center gap-2">
@@ -246,7 +279,7 @@ function GroupDialog({
               variant="outline"
               size="sm"
               onClick={() => setMembers((current) => [...current, EMPTY_MEMBER])}
-              disabled={isLoading}
+              disabled={isLoading || members.length >= MAX_MEMBERS}
               className="gap-1.5"
             >
               <Plus className="h-3.5 w-3.5" />
@@ -534,6 +567,7 @@ export default function ContactGroupsPage() {
           else setDialogOpen(true);
         }}
         editingGroup={editingGroup}
+        existingGroups={groups ?? []}
         onClose={handleDialogClose}
       />
     </div>
