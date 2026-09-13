@@ -312,10 +312,10 @@ body {
 .aury-mark::after {
   content: "";
   display: block;
-  width: 30%;
-  height: 30%;
-  border-radius: 30%;
-  background: #fff;
+  width: 46%;
+  height: 41.4%;
+  background: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='6%207%2020%2018'%3E%3Cpath%20fill='%23fff'%20fill-rule='evenodd'%20d='M16%207%20L26%2025%20H6%20Z%20M16%2013.6%20L18.4%2019.4%20H13.6%20Z%20M12.4%2022.9%20H19.6%20L21.2%2025%20H10.8%20Z'/%3E%3C/svg%3E")
+    center / contain no-repeat;
 }
 
 /* Gradient avatar / chip without the inner white square */
