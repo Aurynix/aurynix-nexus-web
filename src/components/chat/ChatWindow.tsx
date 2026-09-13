@@ -18,6 +18,7 @@ import type {
 import { streamChat, type StreamController } from "@/lib/chat/stream";
 import { parsePendingAction } from "@/lib/chat/pending-action";
 import { CONVERSATIONS_KEY, conversationKey } from "@/hooks/useConversations";
+import { MEMORY_KEY } from "@/hooks/useMemory";
 import { useTimezone } from "@/hooks/useTimezone";
 import { MessageBubble } from "./MessageBubble";
 import { StreamingMessage } from "./StreamingMessage";
@@ -304,7 +305,6 @@ export function ChatWindow({
       didHydrateRef.current = initialMessages.length > 0;
       dispatch({ type: "SET_MESSAGES", messages: initialMessages });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialConversationId, initialMessages]);
 
   // Auto-scroll to bottom
@@ -403,6 +403,11 @@ export function ChatWindow({
           onDone: () => {
             commitDecision();
             dispatch({ type: "STREAM_DONE" });
+            // A turn can change stored facts two ways: the agent calling the
+            // remember/forget tools, or background extraction after the turn.
+            // Neither is visible from here, so mark memory stale on every turn —
+            // the list is small and only refetches when the page is next open.
+            queryClient.invalidateQueries({ queryKey: MEMORY_KEY });
             // Refresh conversation
             if (conversationIdRef.current) {
               queryClient.invalidateQueries({
