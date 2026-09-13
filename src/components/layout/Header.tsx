@@ -20,11 +20,17 @@ const PAGE_TITLES: Record<string, string> = {
 function getPageTitle(pathname: string): string {
   // Exact match first
   if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
-  // Check prefixes
+  // Then the *longest* matching prefix — "/app" is a prefix of every route,
+  // so matching in declaration order would label every sub-page "Dashboard".
+  let best: string | null = null;
+  let bestLength = 0;
   for (const [prefix, title] of Object.entries(PAGE_TITLES)) {
-    if (pathname.startsWith(prefix + "/")) return title;
+    if (pathname.startsWith(prefix + "/") && prefix.length > bestLength) {
+      best = title;
+      bestLength = prefix.length;
+    }
   }
-  return "Aurynix Nexus";
+  return best ?? "Aurynix Nexus";
 }
 
 interface HeaderProps {
@@ -38,7 +44,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
   return (
-    <header className="h-14 flex items-center justify-between px-4 border-b border-border bg-background">
+    <header className="sticky top-0 z-5 h-15 flex items-center justify-between px-4 md:px-7 border-b border-border bg-background/85 backdrop-blur-[10px]">
       <div className="flex items-center gap-3">
         {/* Mobile menu toggle */}
         <Button
@@ -50,7 +56,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         >
           <Menu className="h-4 w-4" />
         </Button>
-        <h1 className="text-sm font-semibold text-foreground">
+        <h1 className="text-[14.5px] font-bold tracking-tight text-foreground">
           {getPageTitle(pathname)}
         </h1>
       </div>
@@ -59,7 +65,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-8 w-8 rounded-[9px] border border-border text-muted-foreground hover:text-foreground"
           onClick={toggleTheme}
           aria-label="Toggle theme"
         >
