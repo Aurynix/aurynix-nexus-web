@@ -23,6 +23,17 @@ const TOOL_LABELS: Record<string, string> = {
   update_calendar_event: "Updating a calendar event",
   delete_calendar_event: "Removing a calendar event",
   list_calendar_events: "Checking your calendar",
+  get_weather: "Checking the weather",
+  current_weather: "Checking the weather",
+  weather_forecast: "Checking the forecast",
+  get_forecast: "Checking the forecast",
+  list_contact_groups: "Looking up your contact groups",
+  get_contact_group: "Looking up a contact group",
+  resolve_contact_group: "Expanding a contact group",
+  expand_contact_group: "Expanding a contact group",
+  create_contact_group: "Saving a contact group",
+  update_contact_group: "Updating a contact group",
+  delete_contact_group: "Removing a contact group",
 };
 
 function formatToolName(tool: string): string {
