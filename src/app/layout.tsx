@@ -38,7 +38,7 @@ export default function RootLayout({
       className={`${manrope.variable} ${jetbrainsMono.variable} h-full`}
     >
       <body suppressHydrationWarning className="h-full bg-background text-foreground antialiased">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <QueryProvider>
             <AuthProvider>{children}</AuthProvider>
           </QueryProvider>
