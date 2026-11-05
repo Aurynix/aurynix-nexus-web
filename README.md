@@ -125,7 +125,7 @@ The full API contract is in [`frontend-api-reference.md`](frontend-api-reference
 
 ### Theming
 
-Colours are CSS variables in `src/app/globals.css`, with overrides under `.dark`. `next-themes` sets the class on `<html>`. The default follows the device, and the header menu offers Light, Dark and System. A manual choice is saved in `localStorage` until the user picks System again.
+Colours are CSS variables in `src/app/globals.css`, with overrides under `.dark`. `next-themes` sets the class on `<html>`. The default follows the device, and the header button switches between light and dark. A manual choice is saved in `localStorage`. Switching back to the theme the device is using clears that choice, so the app follows the device again.
 
 ## Pages
 
@@ -211,7 +211,7 @@ Both redirect URIs must also be listed under **Authorized redirect URIs** in Goo
 | 404 after connecting Google | `OAUTH_SUCCESS_REDIRECT` has the wrong path | Use `/app/settings/integrations?oauth=success` |
 | "No Aurynix account is linked" | Login never creates accounts | Use **Sign up with Google** on `/register` |
 | Meetings land at the wrong time | No valid timezone is saved, so the backend uses UTC | Set it in **Settings → Integrations** |
-| The theme doesn't follow the device | A manual choice is saved | Choose **System** in the header menu |
+| The theme doesn't follow the device | A manual choice is saved | Click the header theme button until it matches the device, which clears the choice |
 
 ## Known limitations
 
