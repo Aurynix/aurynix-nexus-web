@@ -209,9 +209,12 @@ function chatReducer(state: ChatState, action: ChatAction): ChatState {
         activeTool: null,
         // A stream that closes without a single token is a failure, not a
         // silent success — surface it instead of leaving the thread hanging.
-        error: producedNothing
-          ? "The assistant ended the response without sending anything. Please try again."
-          : state.error,
+        // The backend always sends `done` after `error`, so keep the specific
+        // error it reported rather than replacing it with this generic one.
+        error:
+          producedNothing && !state.error
+            ? "The assistant ended the response without sending anything. Please try again."
+            : state.error,
       };
     }
     case "STREAM_ERROR":
