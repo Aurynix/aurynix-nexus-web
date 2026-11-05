@@ -1,9 +1,21 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Moon, Sun, Menu } from "lucide-react";
+import { Check, Laptop, Moon, Sun, Menu } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const THEME_OPTIONS = [
+  { value: "light", label: "Light", icon: Sun },
+  { value: "dark", label: "Dark", icon: Moon },
+  { value: "system", label: "System", icon: Laptop },
+] as const;
 
 const PAGE_TITLES: Record<string, string> = {
   "/app": "Dashboard",
@@ -42,8 +54,6 @@ export function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
 
-  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
-
   return (
     <header className="sticky top-0 z-5 h-15 flex items-center justify-between px-4 md:px-7 border-b border-border bg-background/85 backdrop-blur-[10px]">
       <div className="flex items-center gap-3">
@@ -63,16 +73,28 @@ export function Header({ onMenuClick }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 rounded-[9px] border border-border text-muted-foreground hover:text-foreground"
-          onClick={toggleTheme}
-          aria-label="Toggle theme"
-        >
-          <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-[9px] border border-border text-muted-foreground hover:text-foreground"
+              aria-label="Change theme"
+            >
+              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {THEME_OPTIONS.map(({ value, label, icon: Icon }) => (
+              <DropdownMenuItem key={value} onSelect={() => setTheme(value)}>
+                <Icon className="mr-2 h-4 w-4" />
+                {label}
+                {theme === value && <Check className="ml-auto h-4 w-4" />}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
