@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/hooks/useAuth";
-import { ApiRequestError } from "@/lib/api/client";
+import { useAuthLanguage } from "@/lib/i18n/auth-language";
+import { translateError } from "@/lib/i18n/auth-messages";
+import { describeAuthError } from "@/lib/i18n/auth-errors";
+import { AuthPreferences } from "@/components/auth/AuthPreferences";
 import { Button } from "@/components/ui/button";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 import { AuthDivider } from "@/components/auth/AuthDivider";
@@ -25,14 +29,14 @@ import {
 
 const registerSchema = z
   .object({
-    email: z.string().email("Please enter a valid email address"),
+    email: z.string().email("invalidEmail"),
     password: z
       .string()
-      .min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
+      .min(8, "passwordMin"),
+    confirmPassword: z.string().min(1, "confirmRequired"),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match",
+    message: "passwordMismatch",
     path: ["confirmPassword"],
   });
 
@@ -40,7 +44,9 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const { signUp } = useAuth();
-  const [serverError, setServerError] = useState<string | null>(null);
+  const { language, dir, t } = useAuthLanguage();
+  // The failure itself, not its text, so switching language re-translates it.
+  const [serverError, setServerError] = useState<unknown>(null);
 
   const {
     register,
@@ -55,18 +61,17 @@ export default function RegisterPage() {
     try {
       await signUp({ email: data.email, password: data.password });
     } catch (err) {
-      if (err instanceof ApiRequestError) {
-        setServerError(err.message);
-      } else if (err instanceof Error) {
-        setServerError(err.message);
-      } else {
-        setServerError("Registration failed. Please try again.");
-      }
+      setServerError(err ?? new Error("Request failed"));
     }
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background p-5">
+    <div
+      dir={dir}
+      lang={language}
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background p-5"
+    >
+      <AuthPreferences />
       <div className="aury-glow absolute -top-55 left-1/2 h-140 w-190 -translate-x-1/2" />
       <div className="relative w-full max-w-[420px] animate-aury-fade">
         {/* Logo */}
@@ -80,25 +85,32 @@ export default function RegisterPage() {
         <div className="aury-gradient-border rounded-[20px]">
         <Card className="rounded-[19px] border-0 bg-[image:var(--surface-gradient)] p-2 shadow-none">
           <CardHeader className="space-y-1.5 pb-5">
-            <CardTitle className="text-[21px] tracking-[-0.02em]">Create an account</CardTitle>
+            <CardTitle className="text-[21px] tracking-[-0.02em]">{t.registerTitle}</CardTitle>
             <CardDescription>
-              Enter your details to get started
+              {t.registerDescription}
             </CardDescription>
           </CardHeader>
 
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {serverError && (
+              <Suspense fallback={null}>
+                <GoogleNoAccountNotice />
+              </Suspense>
+
+              {serverError != null && (
                 <Alert variant="destructive">
-                  <AlertDescription>{serverError}</AlertDescription>
+                  <AlertDescription>
+                    {describeAuthError(t, serverError, "signup")}
+                  </AlertDescription>
                 </Alert>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t.email}</Label>
                 <Input
                   id="email"
                   type="email"
+                  dir="ltr"
                   placeholder="you@example.com"
                   autoComplete="email"
                   disabled={isSubmitting}
@@ -106,15 +118,18 @@ export default function RegisterPage() {
                 />
                 {errors.email && (
                   <p className="text-sm text-destructive">
-                    {errors.email.message}
+                    {translateError(t, errors.email.message)}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t.password}</Label>
                 <PasswordInput
+                  showLabel={t.showPassword}
+                  hideLabel={t.hidePassword}
                   id="password"
+                  dir="ltr"
                   placeholder="••••••••"
                   autoComplete="new-password"
                   disabled={isSubmitting}
@@ -122,15 +137,18 @@ export default function RegisterPage() {
                 />
                 {errors.password && (
                   <p className="text-sm text-destructive">
-                    {errors.password.message}
+                    {translateError(t, errors.password.message)}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm password</Label>
+                <Label htmlFor="confirmPassword">{t.confirmPassword}</Label>
                 <PasswordInput
+                  showLabel={t.showPassword}
+                  hideLabel={t.hidePassword}
                   id="confirmPassword"
+                  dir="ltr"
                   placeholder="••••••••"
                   autoComplete="new-password"
                   disabled={isSubmitting}
@@ -138,12 +156,12 @@ export default function RegisterPage() {
                 />
                 {errors.confirmPassword && (
                   <p className="text-sm text-destructive">
-                    {errors.confirmPassword.message}
+                    {translateError(t, errors.confirmPassword.message)}
                   </p>
                 )}
               </div>
 
-              <AuthDivider />
+              <AuthDivider label={t.or} />
               <GoogleButton mode="signup" disabled={isSubmitting} />
 
               <Button
@@ -151,19 +169,19 @@ export default function RegisterPage() {
                 className="aury-btn-primary h-11.5 w-full text-[15px] font-bold"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Creating account…" : "Create account"}
+                {isSubmitting ? t.registerSubmitting : t.registerSubmit}
               </Button>
             </form>
           </CardContent>
 
           <CardFooter className="justify-center pt-1">
             <p className="text-[13.5px] text-muted-foreground">
-              Already have an account?{" "}
+              {t.haveAccount}{" "}
               <Link
                 href="/login"
-                className="ml-0.5 font-bold text-brand-text hover:brightness-115"
+                className="ms-0.5 font-bold text-brand-text hover:brightness-115"
               >
-                Sign in
+                {t.signInLink}
               </Link>
             </p>
           </CardFooter>
@@ -171,9 +189,25 @@ export default function RegisterPage() {
         </div>
 
         <p className="mt-5.5 text-center text-xs text-muted-foreground/70">
-          Protected by Aurynix identity · SOC 2 Type II
+          {t.footer}
         </p>
       </div>
     </div>
+  );
+}
+
+/**
+ * Shown when Google sign-in found no account for the address and sent the user
+ * here. In its own Suspense boundary so the rest of the page still prerenders.
+ */
+function GoogleNoAccountNotice() {
+  const searchParams = useSearchParams();
+  const { t } = useAuthLanguage();
+  if (searchParams.get("from") !== "google") return null;
+
+  return (
+    <Alert>
+      <AlertDescription>{t.googleNoAccount}</AlertDescription>
+    </Alert>
   );
 }

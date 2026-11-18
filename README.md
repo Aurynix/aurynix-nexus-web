@@ -125,7 +125,9 @@ The full API contract is in [`frontend-api-reference.md`](frontend-api-reference
 
 ### Theming
 
-Colours are CSS variables in `src/app/globals.css`, with overrides under `.dark`. `next-themes` sets the class on `<html>`. The default follows the device, and the header button switches between light and dark. A manual choice is saved in `localStorage`. Switching back to the theme the device is using clears that choice, so the app follows the device again.
+Colours are CSS variables in `src/app/globals.css`, with overrides under `.dark`. `next-themes` sets the class on `<html>`. The default follows the device, and the theme button in the app header and on the sign-in and sign-up pages switches between light and dark. A manual choice is saved in `localStorage`. Switching back to the theme the device is using clears that choice, so the app follows the device again.
+
+The sign-in and sign-up pages can also switch between English and Arabic, with right-to-left layout for Arabic. Their text lives in `src/lib/i18n/auth-messages.ts`, and the choice is saved in `localStorage`. The rest of the app is English only.
 
 ## Pages
 

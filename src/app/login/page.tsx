@@ -6,7 +6,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/hooks/useAuth";
-import { ApiRequestError } from "@/lib/api/client";
+import { useAuthLanguage } from "@/lib/i18n/auth-language";
+import { translateError } from "@/lib/i18n/auth-messages";
+import { describeAuthError } from "@/lib/i18n/auth-errors";
+import { AuthPreferences } from "@/components/auth/AuthPreferences";
 import { Button } from "@/components/ui/button";
 import { GoogleButton } from "@/components/auth/GoogleButton";
 import { AuthDivider } from "@/components/auth/AuthDivider";
@@ -24,15 +27,17 @@ import {
 } from "@/components/ui/card";
 
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().email("invalidEmail"),
+  password: z.string().min(1, "passwordRequired"),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const { signIn } = useAuth();
-  const [serverError, setServerError] = useState<string | null>(null);
+  const { language, dir, t } = useAuthLanguage();
+  // The failure itself, not its text, so switching language re-translates it.
+  const [serverError, setServerError] = useState<unknown>(null);
 
   const {
     register,
@@ -47,18 +52,17 @@ export default function LoginPage() {
     try {
       await signIn({ email: data.email, password: data.password });
     } catch (err) {
-      if (err instanceof ApiRequestError) {
-        setServerError(err.message);
-      } else if (err instanceof Error) {
-        setServerError(err.message);
-      } else {
-        setServerError("Sign in failed. Please try again.");
-      }
+      setServerError(err ?? new Error("Request failed"));
     }
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background p-5">
+    <div
+      dir={dir}
+      lang={language}
+      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background p-5"
+    >
+      <AuthPreferences />
       <div className="aury-glow absolute -top-55 left-1/2 h-140 w-190 -translate-x-1/2" />
       <div className="relative w-full max-w-[420px] animate-aury-fade">
         {/* Logo */}
@@ -72,25 +76,28 @@ export default function LoginPage() {
         <div className="aury-gradient-border rounded-[20px]">
         <Card className="rounded-[19px] border-0 bg-[image:var(--surface-gradient)] p-2 shadow-none">
           <CardHeader className="space-y-1.5 pb-5">
-            <CardTitle className="text-[21px] tracking-[-0.02em]">Sign in</CardTitle>
+            <CardTitle className="text-[21px] tracking-[-0.02em]">{t.signInTitle}</CardTitle>
             <CardDescription>
-              Enter your credentials to access your account
+              {t.signInDescription}
             </CardDescription>
           </CardHeader>
 
           <CardContent>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {serverError && (
+              {serverError != null && (
                 <Alert variant="destructive">
-                  <AlertDescription>{serverError}</AlertDescription>
+                  <AlertDescription>
+                    {describeAuthError(t, serverError, "signin")}
+                  </AlertDescription>
                 </Alert>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t.email}</Label>
                 <Input
                   id="email"
                   type="email"
+                  dir="ltr"
                   placeholder="you@example.com"
                   autoComplete="email"
                   disabled={isSubmitting}
@@ -98,15 +105,18 @@ export default function LoginPage() {
                 />
                 {errors.email && (
                   <p className="text-sm text-destructive">
-                    {errors.email.message}
+                    {translateError(t, errors.email.message)}
                   </p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t.password}</Label>
                 <PasswordInput
+                  showLabel={t.showPassword}
+                  hideLabel={t.hidePassword}
                   id="password"
+                  dir="ltr"
                   placeholder="••••••••"
                   autoComplete="current-password"
                   disabled={isSubmitting}
@@ -114,12 +124,12 @@ export default function LoginPage() {
                 />
                 {errors.password && (
                   <p className="text-sm text-destructive">
-                    {errors.password.message}
+                    {translateError(t, errors.password.message)}
                   </p>
                 )}
               </div>
 
-              <AuthDivider />
+              <AuthDivider label={t.or} />
               <GoogleButton mode="signin" disabled={isSubmitting} />
 
               <Button
@@ -127,19 +137,19 @@ export default function LoginPage() {
                 className="aury-btn-primary h-11.5 w-full text-[15px] font-bold"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Signing in…" : "Sign in"}
+                {isSubmitting ? t.signInSubmitting : t.signInSubmit}
               </Button>
             </form>
           </CardContent>
 
           <CardFooter className="justify-center pt-1">
             <p className="text-[13.5px] text-muted-foreground">
-              Don&apos;t have an account?{" "}
+              {t.noAccount}{" "}
               <Link
                 href="/register"
-                className="ml-0.5 font-bold text-brand-text hover:brightness-115"
+                className="ms-0.5 font-bold text-brand-text hover:brightness-115"
               >
-                Sign up
+                {t.signUpLink}
               </Link>
             </p>
           </CardFooter>
@@ -147,7 +157,7 @@ export default function LoginPage() {
         </div>
 
         <p className="mt-5.5 text-center text-xs text-muted-foreground/70">
-          Protected by Aurynix identity · SOC 2 Type II
+          {t.footer}
         </p>
       </div>
     </div>
