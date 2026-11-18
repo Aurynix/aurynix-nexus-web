@@ -1,9 +1,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { Moon, Sun, Menu } from "lucide-react";
-import { useTheme } from "next-themes";
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 
 const PAGE_TITLES: Record<string, string> = {
   "/app": "Dashboard",
@@ -40,15 +40,6 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const pathname = usePathname();
-  const { resolvedTheme, systemTheme, setTheme } = useTheme();
-
-  // Switching back to what the device already shows clears the manual choice,
-  // so the app goes back to following the device instead of pinning that theme.
-  const toggleTheme = () => {
-    const next = resolvedTheme === "dark" ? "light" : "dark";
-    setTheme(next === systemTheme ? "system" : next);
-  };
-
   return (
     <header className="sticky top-0 z-5 h-15 flex items-center justify-between px-4 md:px-7 border-b border-border bg-background/85 backdrop-blur-[10px]">
       <div className="flex items-center gap-3">
@@ -68,16 +59,7 @@ export function Header({ onMenuClick }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 rounded-[9px] border border-border text-muted-foreground hover:text-foreground"
-          onClick={toggleTheme}
-          aria-label="Toggle theme"
-        >
-          <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-        </Button>
+        <ThemeToggle />
       </div>
     </header>
   );

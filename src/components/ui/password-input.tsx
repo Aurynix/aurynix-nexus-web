@@ -8,7 +8,11 @@ import { cn } from "@/lib/utils";
 export type PasswordInputProps = Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
   "type"
->;
+> & {
+  /** Screen-reader labels for the reveal button, for translated pages. */
+  showLabel?: string;
+  hideLabel?: string;
+};
 
 /**
  * Password field with a reveal toggle. Visibility is deliberately local state
@@ -16,7 +20,16 @@ export type PasswordInputProps = Omit<
  * navigation.
  */
 const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
-  ({ className, disabled, ...props }, ref) => {
+  (
+    {
+      className,
+      disabled,
+      showLabel = "Show password",
+      hideLabel = "Hide password",
+      ...props
+    },
+    ref
+  ) => {
     const [visible, setVisible] = React.useState(false);
 
     return (
@@ -36,7 +49,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
           disabled={disabled}
           // The input's own label already names the field; this button only
           // needs to announce what it does.
-          aria-label={visible ? "Hide password" : "Show password"}
+          aria-label={visible ? hideLabel : showLabel}
           aria-pressed={visible}
           // Keeps Enter on a focused toggle from submitting the form.
           tabIndex={-1}

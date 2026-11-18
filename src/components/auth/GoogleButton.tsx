@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { startGoogleAuth } from "@/lib/api/auth";
-import { ApiRequestError } from "@/lib/api/client";
+import { useAuthLanguage } from "@/lib/i18n/auth-language";
+import { describeAuthError } from "@/lib/i18n/auth-errors";
 
 interface GoogleButtonProps {
   mode: "signin" | "signup";
@@ -14,13 +15,14 @@ interface GoogleButtonProps {
  * integration in Settings, which connects Gmail/Calendar to an account that
  * already exists.
  *
- * Requires `GET /auth/google/authorize` on the backend (see
- * BACKEND_REQUIREMENTS.md). Until that ships, the button reports that the
- * feature is unavailable rather than failing silently.
+ * Requires `GET /auth/google/authorize` on the backend. Without it, the button
+ * reports that the feature is unavailable rather than failing silently.
  */
 export function GoogleButton({ mode, disabled }: GoogleButtonProps) {
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // The failure itself, not its text, so switching language re-translates it.
+  const [error, setError] = useState<unknown>(null);
+  const { t } = useAuthLanguage();
 
   const handleClick = async () => {
     setError(null);
@@ -29,18 +31,7 @@ export function GoogleButton({ mode, disabled }: GoogleButtonProps) {
       const { url } = await startGoogleAuth(mode);
       window.location.href = url;
     } catch (err) {
-      // A missing endpoint means the backend half isn't deployed yet; say so
-      // plainly instead of surfacing a generic network error.
-      const notImplemented =
-        err instanceof ApiRequestError &&
-        (err.status === 404 || err.status === 501);
-      setError(
-        notImplemented
-          ? "Google sign-in isn't enabled on this server yet."
-          : err instanceof Error
-            ? err.message
-            : "Could not start Google sign-in."
-      );
+      setError(err ?? new Error("Could not start Google sign-in"));
       setIsRedirecting(false);
     }
   };
@@ -55,14 +46,16 @@ export function GoogleButton({ mode, disabled }: GoogleButtonProps) {
       >
         <GoogleIcon />
         {isRedirecting
-          ? "Redirecting…"
+          ? t.googleRedirecting
           : mode === "signup"
-            ? "Sign up with Google"
-            : "Continue with Google"}
+            ? t.googleSignUp
+            : t.googleContinue}
       </button>
 
-      {error && (
-        <p className="mt-2 text-center text-[13px] text-destructive">{error}</p>
+      {error != null && (
+        <p className="mt-2 text-center text-[13px] text-destructive">
+          {describeAuthError(t, error, "googleStart")}
+        </p>
       )}
     </div>
   );

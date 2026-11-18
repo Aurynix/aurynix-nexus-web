@@ -11,7 +11,7 @@ const REASONS: Record<string, string> = {
     "Google wouldn't complete the sign-in. Try again, and if it keeps failing check that this account is allowed to use the app.",
   access_denied: "You declined the permissions Google asked for.",
   no_account:
-    "No Aurynix account is linked to that Google address. Create one first, then connect Google.",
+    "No Aurynix account uses that Google address yet. Sign up to create one.",
   missing_code: "Google didn't send an authorization code back.",
 };
 

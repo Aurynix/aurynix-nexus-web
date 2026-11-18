@@ -2,9 +2,12 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { describeOAuthReason } from "@/lib/oauth-errors";
+import { AuthPreferences } from "@/components/auth/AuthPreferences";
+import { useAuthLanguage } from "@/lib/i18n/auth-language";
+import { describeAuthError } from "@/lib/i18n/auth-errors";
+import { translateGoogleReason } from "@/lib/i18n/auth-messages";
 
 /**
  * Landing point for Google sign-in. The backend redirects here after Google
@@ -13,11 +16,12 @@ import { describeOAuthReason } from "@/lib/oauth-errors";
  *   /auth/callback?code=<single-use code>
  *   /auth/callback?error=access_denied&reason=<detail>
  *
- * We exchange the code for a token pair and drop the user into the app.
+ * We exchange the code for a token pair and drop the user into the app. A
+ * Google address with no account yet goes to sign-up rather than a dead end.
  */
 export default function GoogleCallbackPage() {
   return (
-    <Suspense fallback={<CallbackShell title="Signing you in…" />}>
+    <Suspense fallback={<CallbackShell status="signingIn" />}>
       <GoogleCallback />
     </Suspense>
   );
@@ -25,42 +29,47 @@ export default function GoogleCallbackPage() {
 
 function GoogleCallback() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { completeGoogleSignIn } = useAuth();
-  const [exchangeError, setExchangeError] = useState<string | null>(null);
+  const { t } = useAuthLanguage();
+  // The failure itself, not its text, so switching language re-translates it.
+  const [exchangeError, setExchangeError] = useState<unknown>(null);
 
   const code = searchParams.get("code");
   const oauthError = searchParams.get("error");
   const reason = searchParams.get("reason");
-
+  const needsAccount = oauthError !== null && reason === "no_account";
   // Derived during render — no effect needed to know the link itself is bad.
-  const linkError = oauthError
-    ? (describeOAuthReason(reason) ??
-      "Google sign-in was cancelled or denied.")
-    : !code
-      ? "That sign-in link is missing its authorization code."
-      : null;
+  const badLink = !needsAccount && (oauthError !== null || !code);
+
+  // Replace, not push: Back should not return to a spent callback URL.
+  useEffect(() => {
+    if (needsAccount) router.replace("/register?from=google");
+  }, [needsAccount, router]);
 
   // Codes are single-use, so guard against React's double-invoke in dev.
   const exchanged = useRef(false);
 
   useEffect(() => {
-    if (linkError || !code || exchanged.current) return;
+    if (needsAccount || badLink || !code || exchanged.current) return;
     exchanged.current = true;
 
     completeGoogleSignIn(code).catch((err: unknown) => {
-      setExchangeError(
-        err instanceof Error
-          ? err.message
-          : "Could not complete Google sign-in."
-      );
+      setExchangeError(err ?? new Error("Google sign-in failed"));
     });
-  }, [code, linkError, completeGoogleSignIn]);
+  }, [code, needsAccount, badLink, completeGoogleSignIn]);
 
-  const error = linkError ?? exchangeError;
+  const error = badLink
+    ? oauthError
+      ? (translateGoogleReason(t, reason) ?? t.callbackCancelled)
+      : t.callbackMissingCode
+    : exchangeError
+      ? describeAuthError(t, exchangeError, "google")
+      : null;
 
   if (error) {
     return (
-      <CallbackShell title="Sign-in failed" tone="error">
+      <CallbackShell status="failed">
         <p className="mt-2 text-[13.5px] leading-relaxed text-muted-foreground">
           {error}
         </p>
@@ -68,26 +77,38 @@ function GoogleCallback() {
           href="/login"
           className="aury-btn-soft mt-5 inline-flex h-9.5 items-center rounded-lg px-4 text-[13.5px] font-semibold"
         >
-          Back to sign in
+          {t.callbackBack}
         </Link>
       </CallbackShell>
     );
   }
 
-  return <CallbackShell title="Signing you in…" />;
+  return <CallbackShell status={needsAccount ? "toSignUp" : "signingIn"} />;
 }
 
 function CallbackShell({
-  title,
-  tone = "pending",
+  status,
   children,
 }: {
-  title: string;
-  tone?: "pending" | "error";
+  status: "signingIn" | "toSignUp" | "failed";
   children?: React.ReactNode;
 }) {
+  const { language, dir, t } = useAuthLanguage();
+  const tone = status === "failed" ? "error" : "pending";
+  const title =
+    status === "failed"
+      ? t.callbackFailed
+      : status === "toSignUp"
+        ? t.callbackToSignUp
+        : t.callbackSigningIn;
+
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-5">
+    <div
+      dir={dir}
+      lang={language}
+      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-5"
+    >
+      <AuthPreferences />
       <div className="aury-glow absolute -top-55 left-1/2 h-140 w-190 -translate-x-1/2" />
       <div className="relative flex animate-aury-fade flex-col items-center text-center">
         <div
